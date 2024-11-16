@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     QT_X11_NO_MITSHM=1 \
     PYTHONIOENCODING=utf-8
 
-# Update and install dependencies
+# Update and install basic dependencies
 RUN apt update && apt install -y \
     build-essential \
     cmake \
@@ -33,15 +33,17 @@ RUN apt update && apt install -y \
     libxcb-xkb-dev \
     libxcb-glx0 \
     python3-pip \
-    python3-colcon-common-extensions \
-    python3-rosdep \
     usbutils \
-    gpio-utils \
     libgpiod-dev \
+    libgpiod2 \
+    gpiod \
     v4l-utils \
     net-tools \
     iputils-ping \
     udev \
+    wget \
+    python3-dev \
+    python3-setuptools \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Set the locale
@@ -50,7 +52,7 @@ RUN locale-gen en_US en_US.UTF-8 && \
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-# Add ROS 2 Humble repository
+# Add ROS 2 apt repository
 RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
@@ -58,12 +60,17 @@ RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o 
 RUN apt update && apt install -y \
     ros-humble-desktop \
     ros-humble-ros-base \
-    ros-humble-rosbridge-suite \
     python3-argcomplete \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
+# Install Python packages
+RUN pip3 install -U \
+    rosdep \
+    colcon-common-extensions
+
 # Initialize rosdep
-RUN rosdep init && rosdep update
+RUN rosdep init || echo "rosdep already initialized" && \
+    rosdep update
 
 # Setup ROS environment
 RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc
