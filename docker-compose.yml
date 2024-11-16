@@ -1,0 +1,22 @@
+version: '3'
+services:
+  ros2:
+    build: .
+    privileged: true  # Needed for GPIO access
+    network_mode: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /dev:/dev
+      - $HOME/.Xauthority:/root/.Xauthority
+      - ./workspace:/ros2_ws
+    devices:
+      - /dev/gpiochip0
+      - /dev/gpiomem
+      - /dev/ttyUSB0
+      - /dev/ttyACM0
+      - /dev/video0
+    group_add:
+      - gpio
