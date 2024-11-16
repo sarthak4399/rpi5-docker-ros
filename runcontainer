@@ -1,0 +1,23 @@
+docker run -it \
+  --env="DISPLAY=$DISPLAY" \
+  --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+  --volume="/path/on/host:/root/workspace" \
+  --device=/dev/gpiomem:/dev/gpiomem \
+  --device=/dev/bus/usb:/dev/bus/usb" \
+  --privileged \
+  --group-add dialout \
+  --group-add plugdev \
+  --name ros2-persistent \
+  ros2-humble-usb-gpio:latest
+
+
+# saving as reusbale container 
+docker commit ros2-persistent ros2-humble-usb-gpio:final
+#Automatically start on boot 
+docker update --restart=always ros2-persistent
+
+
+
+docker stop ros2-persistent
+
+docker start -ai ros2-persistent
